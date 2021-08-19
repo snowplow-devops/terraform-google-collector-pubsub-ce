@@ -1,0 +1,46 @@
+#!/bin/bash
+set -e -x
+
+# -----------------------------------------------------------------------------
+#  BASE INSTALL
+# -----------------------------------------------------------------------------
+
+readonly CONFIG_DIR=/opt/snowplow/config
+
+function install_base_packages() {
+  sudo apt install wget curl unzip -y
+}
+
+function install_docker_ce() {
+  sudo apt install docker.io=20.10.7-0ubuntu1~20.04.1 -y
+  sudo systemctl enable --now docker
+}
+
+sudo apt update -y
+
+install_base_packages
+install_docker_ce
+
+sudo mkdir -p $${CONFIG_DIR}
+sudo cat << EOF > $${CONFIG_DIR}/collector.hocon
+${config}
+EOF
+
+sudo docker run \
+  -d \
+  --name collector \
+  --restart always \
+  --network host \
+%{ if gcp_logs_enabled ~}
+  --log-driver gcplogs \
+%{ else ~}
+  --log-opt max-size=10m \
+  --log-opt max-file=5 \
+%{ endif ~}
+  -v $${CONFIG_DIR}:/snowplow/config \
+  -p ${port}:${port} \
+  -e 'JAVA_OPTS=-Dorg.slf4j.simpleLogger.defaultLogLevel=info' \
+  snowplow/scala-stream-collector-pubsub:${version} \
+  --config /snowplow/config/collector.hocon
+
+${telemetry_script}
