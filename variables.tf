@@ -34,7 +34,7 @@ variable "health_check_path" {
 variable "machine_type" {
   description = "The machine type to use"
   type        = string
-  default     = "e2-micro"
+  default     = "e2-small"
 }
 
 variable "target_size" {
