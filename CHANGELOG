@@ -1,3 +1,7 @@
+Version 0.1.1 (2021-08-23)
+--------------------------
+Bump default machine_type to e2-small (#1)
+
 Version 0.1.0 (2021-08-19)
 --------------------------
 Initial release
