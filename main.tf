@@ -1,6 +1,6 @@
 locals {
   module_name    = "collector-pubsub-ce"
-  module_version = "0.1.1"
+  module_version = "0.1.2"
 
   app_name    = "stream-collector"
   app_version = "2.2.1"

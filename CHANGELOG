@@ -1,3 +1,7 @@
+Version 0.1.2 (2021-08-25)
+--------------------------
+Remove doc references to AWS (#3)
+
 Version 0.1.1 (2021-08-23)
 --------------------------
 Bump default machine_type to e2-small (#1)
