@@ -112,19 +112,19 @@ variable "cookie_domain" {
 }
 
 variable "byte_limit" {
-  description = "The amount of bytes to buffer events before pushing them to Kinesis"
+  description = "The amount of bytes to buffer events before pushing them to PubSub"
   default     = 1000000
   type        = number
 }
 
 variable "record_limit" {
-  description = "The number of events to buffer before pushing them to Kinesis"
+  description = "The number of events to buffer before pushing them to PubSub"
   default     = 500
   type        = number
 }
 
 variable "time_limit_ms" {
-  description = "The amount of time to buffer events before pushing them to Kinesis"
+  description = "The amount of time to buffer events before pushing them to PubSub"
   default     = 500
   type        = number
 }
