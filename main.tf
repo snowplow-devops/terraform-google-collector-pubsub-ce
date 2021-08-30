@@ -3,7 +3,7 @@ locals {
   module_version = "0.1.2"
 
   app_name    = "stream-collector"
-  app_version = "2.2.1"
+  app_version = "2.3.1"
 
   local_labels = {
     name           = var.name
