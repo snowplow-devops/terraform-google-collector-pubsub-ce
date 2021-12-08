@@ -6,7 +6,11 @@ collector {
     redirect = false
     port = 8443
   }
-  paths {}
+  paths {
+%{ for custompath, defaultpath in paths ~}
+    "${custompath}"    = "${defaultpath}"
+%{ endfor ~}
+  }
   p3p {
     policyRef = "/w3c/p3p.xml"
     CP = "NOI DSP COR NID PSA OUR IND COM NAV STA"
