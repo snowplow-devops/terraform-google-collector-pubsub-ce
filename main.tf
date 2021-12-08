@@ -122,6 +122,7 @@ resource "google_compute_firewall" "egress" {
 locals {
   collector_hocon = templatefile("${path.module}/templates/config.hocon.tmpl", {
     port            = var.ingress_port
+    paths           = var.custom_paths
     cookie_domain   = var.cookie_domain
     good_topic_name = var.good_topic_name
     bad_topic_name  = var.bad_topic_name
