@@ -105,6 +105,12 @@ variable "bad_topic_name" {
   type        = string
 }
 
+variable "custom_paths" {
+  description = "Optional custom paths that the collector will respond to"
+  default     = {}
+  type        = map(string)
+}
+
 variable "cookie_domain" {
   description = "Optional first party cookie domain for the collector to set cookies on (e.g. acme.com)"
   default     = ""
