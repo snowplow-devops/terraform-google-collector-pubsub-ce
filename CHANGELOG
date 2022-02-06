@@ -1,3 +1,9 @@
+Version 0.3.0 (2021-02-09)
+--------------------------
+Bump stream-collector to 2.5.0 (#14)
+Allow the collector.paths section of the config to be configured (#15)
+Update copyright to 2022 (#16)
+
 Version 0.2.2 (2021-12-23)
 --------------------------
 Bump stream-collector to 2.4.5 (#13)
