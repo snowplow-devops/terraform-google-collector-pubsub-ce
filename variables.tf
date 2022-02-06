@@ -106,7 +106,7 @@ variable "bad_topic_name" {
 }
 
 variable "custom_paths" {
-  description = "Optional custom paths that the collector will respond to"
+  description = "Optional custom paths that the collector will respond to, typical paths to override are '/com.snowplowanalytics.snowplow/tp2', '/com.snowplowanalytics.iglu/v1' and '/r/tp2'. e.g. { \"/custom/path/\" : \"/com.snowplowanalytics.snowplow/tp2\"}"
   default     = {}
   type        = map(string)
 }
