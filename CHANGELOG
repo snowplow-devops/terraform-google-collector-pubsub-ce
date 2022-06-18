@@ -1,29 +1,4 @@
-Version 0.3.0 (2021-02-09)
+Version 0.1.0 (2022-06-17)
 --------------------------
-Bump stream-collector to 2.5.0 (#14)
-Allow the collector.paths section of the config to be configured (#15)
-Update copyright to 2022 (#16)
-
-Version 0.2.2 (2021-12-23)
---------------------------
-Bump stream-collector to 2.4.5 (#13)
-
-Version 0.2.1 (2021-10-11)
---------------------------
-Update docker_ce to always use latest stable version (#9)
-
-Version 0.2.0 (2021-08-30)
---------------------------
-Bump Collector to v2.3.1 (#5)
-
-Version 0.1.2 (2021-08-25)
---------------------------
-Remove doc references to AWS (#3)
-
-Version 0.1.1 (2021-08-23)
---------------------------
-Bump default machine_type to e2-small (#1)
-
-Version 0.1.0 (2021-08-19)
---------------------------
-Initial release
+Initial working module (#1)
+Terraform Docs CI & descriptions (#2)
