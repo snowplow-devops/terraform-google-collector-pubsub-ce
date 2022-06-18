@@ -30,8 +30,11 @@ jobs:
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v1 
       with:
-        terraform_version: 0.15.5
+        terraform_version: 1.2.3
         terraform_wrapper: false
 
     - name: Check formatting
       run: terraform fmt -check -recursive
+
+    - name: Validate Module
+      run: terraform validate

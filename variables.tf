@@ -1,6 +1,8 @@
-variable "name" {
-  description = "A name which will be pre-pended to the resources created"
+
+variable "prefix" {
+  description = "Will be prefixed to all resource names. Use to easily identify the resources created"
   type        = string
+  default     = "snowplow"
 }
 
 variable "region" {
@@ -19,40 +21,16 @@ variable "subnetwork" {
   default     = ""
 }
 
-variable "ingress_port" {
-  description = "The port that the collector will be bound to and expose over HTTP"
-  type        = number
-  default     = 8080
-}
-
-variable "health_check_path" {
-  description = "The path to bind for health checks"
-  type        = string
-  default     = "/health"
-}
-
 variable "machine_type" {
   description = "The machine type to use"
   type        = string
-  default     = "e2-small"
-}
-
-variable "target_size" {
-  description = "The number of servers to deploy"
-  default     = 1
-  type        = number
-}
-
-variable "associate_public_ip_address" {
-  description = "Whether to assign a public ip address to this instance; if false this instance must be behind a Cloud NAT to connect to the internet"
-  type        = bool
-  default     = true
+  default     = "e2-micro"
 }
 
 variable "ssh_ip_allowlist" {
   description = "The list of CIDR ranges to allow SSH traffic from"
   type        = list(any)
-  default     = ["0.0.0.0/0"]
+  default     = [""]
 }
 
 variable "ssh_block_project_keys" {
@@ -88,63 +66,54 @@ variable "gcp_logs_enabled" {
   type        = bool
 }
 
-# --- Configuration options
+variable "images" {
+  description = <<EOH
+  The docker images with version tag to deploy on Compute Engine's instances. See here for details:
+  https://docs.snowplowanalytics.com/docs/pipeline-components-and-applications/loaders-storage-targets/bigquery-loader/
 
-variable "topic_project_id" {
-  description = "The project ID in which the topics are deployed"
+  The default is to launch all three apps: 'Stream Loader', 'Mutator' and 'Repeater'.
+  EOH
+  type        = list(string)
+  default = [
+    "snowplow/snowplow-bigquery-streamloader:1.3.0",
+    "snowplow/snowplow-bigquery-loader:1.3.0",
+    "snowplow/snowplow-bigquery-mutator:1.3.0"
+  ]
+}
+
+variable "service_account_email" {
+  description = "A service account email to create the compute instances."
   type        = string
 }
 
-variable "good_topic_name" {
-  description = "The name of the good pubsub topic that the collector will insert data into"
-  type        = string
+variable "enriched_sub" {
+  type = string
 }
 
-variable "bad_topic_name" {
-  description = "The name of the bad pubsub topic that the collector will insert data into"
-  type        = string
+variable "bad_topic" {
+  type = string
 }
 
-variable "custom_paths" {
-  description = "Optional custom paths that the collector will respond to, typical paths to override are '/com.snowplowanalytics.snowplow/tp2', '/com.snowplowanalytics.iglu/v1' and '/r/tp2'. e.g. { \"/custom/path/\" : \"/com.snowplowanalytics.snowplow/tp2\"}"
-  default     = {}
-  type        = map(string)
+variable "types_sub" {
+  type = string
 }
 
-variable "cookie_domain" {
-  description = "Optional first party cookie domain for the collector to set cookies on (e.g. acme.com)"
-  default     = ""
-  type        = string
+variable "types_topic" {
+  type = string
 }
 
-variable "byte_limit" {
-  description = "The amount of bytes to buffer events before pushing them to PubSub"
-  default     = 1000000
-  type        = number
+variable "failed_inserts_sub" {
+  type = string
 }
 
-variable "record_limit" {
-  description = "The number of events to buffer before pushing them to PubSub"
-  default     = 500
-  type        = number
+variable "failed_inserts_topic" {
+  type = string
 }
 
-variable "time_limit_ms" {
-  description = "The amount of time to buffer events before pushing them to PubSub"
-  default     = 500
-  type        = number
+variable "dead_letter_bucket_path" {
+  type = string
 }
 
-# --- Telemetry
-
-variable "telemetry_enabled" {
-  description = "Whether or not to send telemetry information back to Snowplow Analytics Ltd"
-  type        = bool
-  default     = true
-}
-
-variable "user_provided_id" {
-  description = "An optional unique identifier to identify the telemetry events emitted by this stack"
-  type        = string
-  default     = ""
+variable "tags" {
+  type = list(string)
 }

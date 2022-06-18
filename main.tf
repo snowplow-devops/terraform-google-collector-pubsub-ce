@@ -1,14 +1,8 @@
 locals {
-  module_name    = "collector-pubsub-ce"
+  module_name    = "snowplow-bigquery-loader-apps"
   module_version = "0.3.0"
 
-  app_name    = "stream-collector"
-  app_version = "2.5.0"
-
   local_labels = {
-    name           = var.name
-    app_name       = local.app_name
-    app_version    = replace(local.app_version, ".", "-")
     module_name    = local.module_name
     module_version = replace(local.module_version, ".", "-")
   }
@@ -21,147 +15,43 @@ locals {
   named_port_http = "http"
 }
 
-module "telemetry" {
-  source  = "snowplow-devops/telemetry/snowplow"
-  version = "0.2.0"
-
-  count = var.telemetry_enabled ? 1 : 0
-
-  user_provided_id = var.user_provided_id
-  cloud            = "GCP"
-  region           = var.region
-  app_name         = local.app_name
-  app_version      = local.app_version
-  module_name      = local.module_name
-  module_version   = local.module_version
-}
-
 data "google_compute_image" "ubuntu_20_04" {
   family  = "ubuntu-2004-lts"
   project = "ubuntu-os-cloud"
 }
 
-# --- IAM: Service Account setup
-
-resource "google_service_account" "sa" {
-  account_id   = var.name
-  display_name = "Snowplow Stream Collector service account - ${var.name}"
-}
-
-resource "google_project_iam_member" "sa_pubsub_viewer" {
-  role   = "roles/pubsub.viewer"
-  member = "serviceAccount:${google_service_account.sa.email}"
-}
-
-resource "google_project_iam_member" "sa_pubsub_publisher" {
-  role   = "roles/pubsub.publisher"
-  member = "serviceAccount:${google_service_account.sa.email}"
-}
-
-resource "google_project_iam_member" "sa_logging_log_writer" {
-  role   = "roles/logging.logWriter"
-  member = "serviceAccount:${google_service_account.sa.email}"
-}
-
-# --- CE: Firewall rules
-
-resource "google_compute_firewall" "ingress_ssh" {
-  name = "${var.name}-ssh-in"
-
-  network     = var.network
-  target_tags = [var.name]
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  source_ranges = var.ssh_ip_allowlist
-}
-
-# Needed to allow Health Checks and External Load Balancing services access to
-# our server group.
-#
-# https://cloud.google.com/load-balancing/docs/health-check-concepts#ip-ranges
-resource "google_compute_firewall" "ingress" {
-  name = "${var.name}-traffic-in"
-
-  network     = var.network
-  target_tags = [var.name]
-
-  allow {
-    protocol = "tcp"
-    ports    = ["${var.ingress_port}"]
-  }
-
-  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
-}
-
-resource "google_compute_firewall" "egress" {
-  name = "${var.name}-traffic-out"
-
-  network     = var.network
-  target_tags = [var.name]
-
-  allow {
-    protocol = "tcp"
-    ports    = ["80", "443"]
-  }
-
-  allow {
-    protocol = "udp"
-    ports    = ["123"]
-  }
-
-  direction          = "EGRESS"
-  destination_ranges = ["0.0.0.0/0"]
-}
-
-# --- CE: Instance group setup
-
 locals {
-  collector_hocon = templatefile("${path.module}/templates/config.hocon.tmpl", {
-    port            = var.ingress_port
-    paths           = var.custom_paths
-    cookie_domain   = var.cookie_domain
-    good_topic_name = var.good_topic_name
-    bad_topic_name  = var.bad_topic_name
-    project_id      = var.topic_project_id
+  config = templatefile("${path.module}/templates/config.hocon.tmpl", {
+    enriched_sub = var.enriched_sub
+    bad_topic    = var.bad_topic
 
-    byte_limit    = var.byte_limit
-    record_limit  = var.record_limit
-    time_limit_ms = var.time_limit_ms
+    types_sub   = var.types_sub
+    types_topic = var.types_topic
 
-    disable           = !tobool(var.telemetry_enabled)
-    telemetry_url     = join("", module.telemetry.*.collector_uri)
-    user_provided_id  = var.user_provided_id
-    auto_generated_id = join("", module.telemetry.*.auto_generated_id)
-    module_name       = local.module_name
-    module_version    = local.module_version
+    failed_inserts_sub   = var.failed_inserts_sub
+    failed_inserts_topic = var.failed_inserts_topic
+
+    dead_letter_bucket_path = var.dead_letter_bucket_path
   })
 
-  startup_script = templatefile("${path.module}/templates/startup-script.sh.tmpl", {
-    port    = var.ingress_port
-    config  = local.collector_hocon
-    version = local.app_version
-
-    telemetry_script = join("", module.telemetry.*.gcp_ubuntu_20_04_user_data)
-
-    gcp_logs_enabled = var.gcp_logs_enabled
-  })
+  resolver = file("${path.module}/templates/resolver.json.tmpl")
 
   ssh_keys_metadata = <<EOF
-%{for v in var.ssh_key_pairs~}
-    ${v.user_name}:${v.public_key}
-%{endfor~}
-EOF
+    %{for v in var.ssh_key_pairs~}
+      ${v.user_name}:${v.public_key}
+    %{endfor~}
+  EOF
+
+  images_by_name = {
+    for i in var.images : regex(".*[/]([a-z-]*):", i) => i
+  }
 }
 
 resource "google_compute_instance_template" "tpl" {
-  name_prefix = "${var.name}-"
-  description = "This template is used to create Stream Collector instances"
+  name_prefix = local.module_name
+  description = "This template is used to create Compute Engine instances, running the Snowplow BigQuery Loader apps."
 
-  instance_description = var.name
+  instance_description = var.prefix
   machine_type         = var.machine_type
 
   scheduling {
@@ -183,29 +73,19 @@ resource "google_compute_instance_template" "tpl" {
     network    = var.subnetwork == "" ? var.network : ""
     subnetwork = var.subnetwork
 
-    dynamic "access_config" {
-      for_each = var.associate_public_ip_address ? [1] : []
-
-      content {
-        network_tier = "PREMIUM"
-      }
-    }
   }
 
   service_account {
-    email  = google_service_account.sa.email
+    email  = var.service_account_email
     scopes = ["cloud-platform"]
   }
 
-  metadata_startup_script = local.startup_script
-
   metadata = {
     block-project-ssh-keys = var.ssh_block_project_keys
-
-    ssh-keys = local.ssh_keys_metadata
+    ssh-keys               = local.ssh_keys_metadata
   }
 
-  tags = [var.name]
+  tags = [var.prefix]
 
   labels = local.labels
 
@@ -214,58 +94,17 @@ resource "google_compute_instance_template" "tpl" {
   }
 }
 
-resource "google_compute_health_check" "hc" {
-  name = var.name
+resource "google_compute_instance_from_template" "snowplow_bq_app" {
+  for_each = local.images_by_name
+  name     = "${var.prefix}-${each.key}"
+  zone     = var.region
 
-  check_interval_sec  = 5
-  timeout_sec         = 5
-  healthy_threshold   = 2
-  unhealthy_threshold = 10
+  source_instance_template = google_compute_instance_template.tpl.id
 
-  http_health_check {
-    request_path = var.health_check_path
-    port         = var.ingress_port
-  }
-}
-
-resource "google_compute_region_instance_group_manager" "grp" {
-  name = "${var.name}-grp"
-
-  base_instance_name = var.name
-  region             = var.region
-
-  target_size = var.target_size
-
-  named_port {
-    name = local.named_port_http
-    port = var.ingress_port
-  }
-
-  version {
-    name              = "${local.app_name}-${local.app_version}"
-    instance_template = google_compute_instance_template.tpl.self_link
-  }
-
-  update_policy {
-    type                  = "PROACTIVE"
-    minimal_action        = "REPLACE"
-    max_unavailable_fixed = 3
-  }
-
-  auto_healing_policies {
-    health_check      = google_compute_health_check.hc.self_link
-    initial_delay_sec = 300
-  }
-
-  wait_for_instances = true
-
-  timeouts {
-    create = "20m"
-    update = "20m"
-    delete = "30m"
-  }
-
-  depends_on = [
-    google_compute_firewall.ingress
-  ]
+  metadata_startup_script = templatefile("${path.module}/templates/startup-script.sh.tmpl", {
+    name                   = each.key
+    image                  = each.value
+    config_hocon_contents  = local.config
+    resolver_json_contents = local.resolver
+  })
 }

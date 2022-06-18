@@ -22,25 +22,29 @@ install_base_packages
 install_docker_ce
 
 sudo mkdir -p $${CONFIG_DIR}
+
+# Create config.hocon on volume from template
 sudo cat << EOF > $${CONFIG_DIR}/collector.hocon
-${config}
+${config_hocon_contents}
 EOF
 
-sudo docker run \
-  -d \
-  --name collector \
-  --restart always \
-  --network host \
-%{ if gcp_logs_enabled ~}
-  --log-driver gcplogs \
-%{ else ~}
-  --log-opt max-size=10m \
-  --log-opt max-file=5 \
-%{ endif ~}
-  -v $${CONFIG_DIR}:/snowplow/config \
-  -p ${port}:${port} \
-  -e 'JAVA_OPTS=-Dorg.slf4j.simpleLogger.defaultLogLevel=info' \
-  snowplow/scala-stream-collector-pubsub:${version} \
-  --config /snowplow/config/collector.hocon
+# Create base64 collector string
+collector_base64=$(base64 $${CONFIG_DIR}/collector.hocon)
 
-${telemetry_script}
+# Create resolver.json on volume from template
+sudo cat << EOF > $${CONFIG_DIR}/resolver.json
+${resolver_json_contents}
+EOF
+
+# Create base64 resolver string
+resolver_base64=$(base64 $${CONFIG_DIR}/resolver.json)
+
+# Run container from image
+sudo docker run -v $${CONFIG_DIR}/resolver.json:/resolver.json \
+  snowplow/${image} \
+  %{ if name == "snowplow-bigquery-mutator" ~}
+  listen \
+  %{ endif ~}
+  --config $collector_base64 \
+  --resolver $resolver_base64 \
+  -Dconfig.override_with_env_vars=true
