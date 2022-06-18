@@ -1,6 +1,6 @@
 locals {
   module_name    = "snowplow-bigquery-loader-apps"
-  module_version = "0.3.0"
+  module_version = "0.1.0"
 
   local_labels = {
     module_name    = local.module_name
