@@ -132,12 +132,13 @@ locals {
     record_limit  = var.record_limit
     time_limit_ms = var.time_limit_ms
 
-    disable           = !tobool(var.telemetry_enabled)
-    telemetry_url     = join("", module.telemetry.*.collector_uri)
-    user_provided_id  = var.user_provided_id
-    auto_generated_id = join("", module.telemetry.*.auto_generated_id)
-    module_name       = local.module_name
-    module_version    = local.module_version
+    disable                 = !tobool(var.telemetry_enabled)
+    telemetry_url           = join("", module.telemetry.*.collector_uri)
+    user_provided_id        = var.user_provided_id
+    auto_generated_id       = join("", module.telemetry.*.auto_generated_id)
+    module_name             = local.module_name
+    module_version          = local.module_version
+    enable_default_redirect = var.enable_default_redirect
   })
 
   startup_script = templatefile("${path.module}/templates/startup-script.sh.tmpl", {

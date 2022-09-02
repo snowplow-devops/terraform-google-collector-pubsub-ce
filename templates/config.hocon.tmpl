@@ -41,7 +41,7 @@ collector {
     fallbackNetworkUserId = "00000000-0000-4000-A000-000000000000"
     forwardedProtocolHeader = "X-Forwarded-Proto"
   }
-  enableDefaultRedirect = false
+  enableDefaultRedirect = ${enable_default_redirect}
   redirectMacro {
     enabled = false
     placeholder = "[TOKEN]"

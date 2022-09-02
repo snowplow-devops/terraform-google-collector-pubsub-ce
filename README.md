@@ -131,6 +131,7 @@ module "collector_lb" {
 | <a name="input_time_limit_ms"></a> [time\_limit\_ms](#input\_time\_limit\_ms) | The amount of time to buffer events before pushing them to PubSub | `number` | `500` | no |
 | <a name="input_ubuntu_20_04_source_image"></a> [ubuntu\_20\_04\_source\_image](#input\_ubuntu\_20\_04\_source\_image) | The source image to use which must be based of of Ubuntu 20.04; by default the latest community version is used | `string` | `""` | no |
 | <a name="input_user_provided_id"></a> [user\_provided\_id](#input\_user\_provided\_id) | An optional unique identifier to identify the telemetry events emitted by this stack | `string` | `""` | no |
+| <a name="input_enable_default_redirect"></a> [enable\_default\_redirect](#input\_enable\_default\_redirect) | Whether to allow {collector_host}/r/tp2 to respond with a redirect uri | `bool` | `false` | no |
 
 ## Outputs
 

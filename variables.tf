@@ -135,6 +135,12 @@ variable "time_limit_ms" {
   type        = number
 }
 
+variable "enable_default_redirect" {
+  description = "Whether to allow {collector_host}/r/tp2 to respond with a redirect uri"
+  type        = bool
+  default     = false
+}
+
 # --- Telemetry
 
 variable "telemetry_enabled" {
