@@ -1,29 +1,9 @@
-#!/bin/bash
-set -e -x
-
-# -----------------------------------------------------------------------------
-#  BASE INSTALL
-# -----------------------------------------------------------------------------
-
 readonly CONFIG_DIR=/opt/snowplow/config
 
-function install_base_packages() {
-  sudo apt install wget curl unzip -y
-}
-
-function install_docker_ce() {
-  sudo apt install docker.io -y
-  sudo systemctl enable --now docker
-}
-
-sudo apt update -y
-
-install_base_packages
-install_docker_ce
-
 sudo mkdir -p $${CONFIG_DIR}
-sudo cat << EOF > $${CONFIG_DIR}/collector.hocon
-${config}
+
+sudo base64 --decode << EOF > $${CONFIG_DIR}/collector.hocon
+${config_b64}
 EOF
 
 sudo docker run \
@@ -31,15 +11,17 @@ sudo docker run \
   --name collector \
   --restart always \
   --network host \
+  --memory=$(get_application_memory_mb)m \
 %{ if gcp_logs_enabled ~}
   --log-driver gcplogs \
 %{ else ~}
   --log-opt max-size=10m \
   --log-opt max-file=5 \
 %{ endif ~}
-  -v $${CONFIG_DIR}:/snowplow/config \
+  --mount type=bind,source=$${CONFIG_DIR},target=/snowplow/config \
+  --env JDK_JAVA_OPTIONS='${java_opts}' \
+  --env INSTANCE_ID=$(get_instance_id) \
   -p ${port}:${port} \
-  -e 'JAVA_OPTS=-Dorg.slf4j.simpleLogger.defaultLogLevel=info' \
   snowplow/scala-stream-collector-pubsub:${version} \
   --config /snowplow/config/collector.hocon
 
