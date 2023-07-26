@@ -3,6 +3,17 @@ variable "name" {
   type        = string
 }
 
+variable "app_version" {
+  description = "App version to use. This variable facilitates dev flow, the modules may not work with anything other than the default value."
+  type        = string
+  default     = "2.9.1"
+}
+
+variable "project_id" {
+  description = "The project ID in which the stack is being deployed"
+  type        = string
+}
+
 variable "region" {
   description = "The name of the region to deploy within"
   type        = string
@@ -86,6 +97,12 @@ variable "gcp_logs_enabled" {
   description = "Whether application logs should be reported to GCP Logging"
   default     = true
   type        = bool
+}
+
+variable "java_opts" {
+  description = "Custom JAVA Options"
+  default     = "-XX:InitialRAMPercentage=75 -XX:MaxRAMPercentage=75"
+  type        = string
 }
 
 # --- Configuration options
