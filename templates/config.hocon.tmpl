@@ -59,23 +59,24 @@ collector {
     enabled = false
   }
   streams {
-    good = ${good_topic_name}
-    bad = ${bad_topic_name}
     useIpAddressAsPartitionKey = false
-    sink {
-      enabled = google-pub-sub
+    good {
+      name = ${good_topic_name}
       googleProjectId = "${project_id}"
-      backoffPolicy {
-        minBackoff = 1000
-        maxBackoff = 1000
-        totalBackoff = 10000
-        multiplier = 1
+      buffer {
+        byteLimit = ${byte_limit}
+        recordLimit = ${record_limit}
+        timeLimit = ${time_limit_ms}
       }
     }
-    buffer {
-      byteLimit = ${byte_limit}
-      recordLimit = ${record_limit}
-      timeLimit = ${time_limit_ms}
+    bad {
+      name = ${bad_topic_name}
+      googleProjectId = "${project_id}"
+      buffer {
+        byteLimit = ${byte_limit}
+        recordLimit = ${record_limit}
+        timeLimit = ${time_limit_ms}
+      }
     }
   }
   telemetry {
@@ -90,18 +91,5 @@ collector {
     moduleName = "${telemetry_module_name}"
     moduleVersion = "${telemetry_module_version}"
     instanceId = $${INSTANCE_ID}
-  }
-}
-akka {
-  loglevel = WARNING
-  loggers = ["akka.event.slf4j.Slf4jLogger"]
-  http.server {
-    remote-address-header = on
-    raw-request-uri-header = on
-    parsing {
-      max-uri-length = 32768
-      uri-parsing-mode = relaxed
-    }
-    max-connections = 2048
   }
 }
