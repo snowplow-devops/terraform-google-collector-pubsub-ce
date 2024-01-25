@@ -1,3 +1,8 @@
+Version 0.5.0 (2024-01-25)
+--------------------------
+Update LICENSE to SLULA (#27)
+Update Collector to v3.0.1 (#28)
+
 Version 0.4.0 (2023-07-26)
 --------------------------
 Leverage common service module (#24)
