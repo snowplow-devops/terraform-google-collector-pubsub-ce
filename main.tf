@@ -64,7 +64,8 @@ resource "google_project_iam_member" "sa_logging_log_writer" {
 # --- CE: Firewall rules
 
 resource "google_compute_firewall" "ingress_ssh" {
-  name = "${var.name}-ssh-in"
+  project = (var.network_project_id != "") ? var.network_project_id : var.project_id
+  name    = "${var.name}-ssh-in"
 
   network     = var.network
   target_tags = [var.name]
@@ -82,7 +83,8 @@ resource "google_compute_firewall" "ingress_ssh" {
 #
 # https://cloud.google.com/load-balancing/docs/health-check-concepts#ip-ranges
 resource "google_compute_firewall" "ingress" {
-  name = "${var.name}-traffic-in"
+  project = (var.network_project_id != "") ? var.network_project_id : var.project_id
+  name    = "${var.name}-traffic-in"
 
   network     = var.network
   target_tags = [var.name]
@@ -96,7 +98,8 @@ resource "google_compute_firewall" "ingress" {
 }
 
 resource "google_compute_firewall" "egress" {
-  name = "${var.name}-traffic-out"
+  project = (var.network_project_id != "") ? var.network_project_id : var.project_id
+  name    = "${var.name}-traffic-out"
 
   network     = var.network
   target_tags = [var.name]
