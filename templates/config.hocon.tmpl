@@ -92,4 +92,8 @@ collector {
     moduleVersion = "${telemetry_module_version}"
     instanceId = $${INSTANCE_ID}
   }
+  compression {
+    enabled = ${compression_enabled}
+    zstdCompressionLevel = ${compression_level}
+  }
 }

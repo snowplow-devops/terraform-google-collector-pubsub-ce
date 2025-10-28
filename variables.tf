@@ -17,7 +17,7 @@ variable "name" {
 variable "app_version" {
   description = "App version to use. This variable facilitates dev flow, the modules may not work with anything other than the default value."
   type        = string
-  default     = "3.4.0"
+  default     = "3.7.0"
 }
 
 variable "project_id" {
@@ -167,6 +167,23 @@ variable "time_limit_ms" {
   description = "The amount of time to buffer events before pushing them to PubSub"
   default     = 500
   type        = number
+}
+
+variable "compression_enabled" {
+  description = "Whether zstd compression is enabled for output data from the Collector"
+  default     = true
+  type        = bool
+}
+
+variable "compression_level" {
+  description = "The zstd compression level to use (between 1-15)"
+  default     = 9
+  type        = number
+
+  validation {
+    condition     = var.compression_level >= 1 && var.compression_level <= 15
+    error_message = "Valid values for 'compression_level' should be between 1 and 15"
+  }
 }
 
 # --- Telemetry
