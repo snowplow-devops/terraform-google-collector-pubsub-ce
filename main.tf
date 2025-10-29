@@ -23,7 +23,7 @@ locals {
 
 module "telemetry" {
   source  = "snowplow-devops/telemetry/snowplow"
-  version = "0.5.0"
+  version = "0.6.1"
 
   count = var.telemetry_enabled ? 1 : 0
 
@@ -153,7 +153,7 @@ locals {
     config_b64 = base64encode(local.collector_hocon)
     version    = local.app_version
 
-    telemetry_script = join("", module.telemetry.*.gcp_ubuntu_20_04_user_data)
+    telemetry_script = join("", module.telemetry.*.gcp_ubuntu_24_04_user_data)
 
     gcp_logs_enabled = var.gcp_logs_enabled
 
