@@ -1,3 +1,8 @@
+Version 0.7.0 (2025-10-29)
+--------------------------
+Bump app_version to v3.7.0
+Bump telemetry module to v0.6.1
+
 Version 0.6.0 (2025-01-03)
 ---------------------------
 Update to SLULA v1.1
