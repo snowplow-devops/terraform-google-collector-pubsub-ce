@@ -86,7 +86,7 @@ module "collector_lb" {
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_service"></a> [service](#module\_service) | snowplow-devops/service-ce/google | 0.2.0 |
-| <a name="module_telemetry"></a> [telemetry](#module\_telemetry) | snowplow-devops/telemetry/snowplow | 0.6.1 |
+| <a name="module_telemetry"></a> [telemetry](#module\_telemetry) | snowplow-devops/telemetry/snowplow | 0.6.3 |
 
 ## Resources
 
